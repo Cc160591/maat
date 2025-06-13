@@ -14,7 +14,7 @@ const TimestampClipExtractor = () => {
   const [progress, setProgress] = useState(0);
 
   // API Base URL - usa localhost durante sviluppo
-  const API_BASE = 'http://localhost:8000';
+  const API_BASE = 'https://maat-production.up.railway.app';
 
   const parseTimestamps = (input) => {
     const pattern = /(\d+:\d+:\d+)\s+Stream Time Marker\s*-?\s*(.*)/g;
