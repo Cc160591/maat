@@ -144,27 +144,41 @@ const TimestampClipExtractor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative overflow-hidden bg-red-500">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+          <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        </div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            🎬 Timestamp Clip Extractor
-          </h1>
-          <p className="text-xl text-purple-100">
-            Estrai clip precise dai tuoi stream usando i timestamp
-          </p>
+          <div className="backdrop-filter backdrop-blur-lg bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl p-8 mx-auto max-w-2xl shadow-2xl">
+            <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+              🎬 MAAT
+            </h1>
+            <p className="text-xl text-white text-opacity-90 drop-shadow">
+              Estrai clip precise dai tuoi stream usando i timestamp
+            </p>
+          </div>
         </div>
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto">
           {/* Input Form */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+          <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+            {/* Shimmer effect */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white via-opacity-30 to-transparent animate-pulse"></div>
+            
             <div className="grid gap-6">
               {/* Video URL */}
               <div>
-                <label className="flex items-center text-lg font-semibold text-gray-700 mb-3">
-                  <Play className="mr-2 text-purple-600" size={20} />
+                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
+                  <Play className="mr-2 text-white" size={20} />
                   URL Video (Twitch/YouTube)
                 </label>
                 <input
@@ -172,34 +186,34 @@ const TimestampClipExtractor = () => {
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="https://www.twitch.tv/videos/..."
-                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none transition-all"
+                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all text-white placeholder-white placeholder-opacity-50"
                   disabled={isProcessing}
                 />
               </div>
 
               {/* Timestamp Input */}
               <div>
-                <label className="flex items-center text-lg font-semibold text-gray-700 mb-3">
-                  <Clock className="mr-2 text-purple-600" size={20} />
+                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
+                  <Clock className="mr-2 text-white" size={20} />
                   Timestamp Input
                 </label>
                 <textarea
                   value={timestampInput}
                   onChange={(e) => setTimestampInput(e.target.value)}
                   placeholder="0:15:43 Stream Time Marker - Descrizione evento"
-                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none transition-all font-mono text-sm"
+                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all font-mono text-sm text-white placeholder-white placeholder-opacity-50 resize-none"
                   rows={6}
                   disabled={isProcessing}
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-white text-opacity-70 mt-2">
                   📝 Formato: "HH:MM:SS Stream Time Marker - Descrizione"
                 </p>
               </div>
 
               {/* Clip Duration */}
               <div>
-                <label className="flex items-center text-lg font-semibold text-gray-700 mb-3">
-                  <FileVideo className="mr-2 text-purple-600" size={20} />
+                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
+                  <FileVideo className="mr-2 text-white" size={20} />
                   Durata Clip (secondi)
                 </label>
                 <input
@@ -208,10 +222,10 @@ const TimestampClipExtractor = () => {
                   onChange={(e) => setClipDuration(parseInt(e.target.value))}
                   min="10"
                   max="300"
-                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none transition-all"
+                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all text-white placeholder-white placeholder-opacity-50"
                   disabled={isProcessing}
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-white text-opacity-70 mt-2">
                   ⏰ La clip inizierà {clipDuration} secondi prima del timestamp
                 </p>
               </div>
@@ -220,58 +234,66 @@ const TimestampClipExtractor = () => {
               <button
                 onClick={processClips}
                 disabled={isProcessing}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full backdrop-filter backdrop-blur-md bg-gradient-to-r from-white from-opacity-20 to-white to-opacity-10 border border-white border-opacity-30 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center relative overflow-hidden"
               >
-                {isProcessing ? (
-                  <>
-                    <Loader className="animate-spin mr-2" size={20} />
-                    Elaborazione in corso... {progress}%
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2" size={20} />
-                    🚀 Estrai Clip
-                  </>
-                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-20 rounded-xl"></div>
+                <div className="relative z-10 flex items-center">
+                  {isProcessing ? (
+                    <>
+                      <Loader className="animate-spin mr-2" size={20} />
+                      Elaborazione in corso... {progress}%
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2" size={20} />
+                      🚀 Estrai Clip
+                    </>
+                  )}
+                </div>
               </button>
             </div>
           </div>
 
           {/* Progress Bar */}
           {isProcessing && (
-            <div className="bg-white rounded-xl p-6 mb-8">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Progresso</span>
-                <span className="text-sm font-medium text-gray-700">{progress}%</span>
+            <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-2xl p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-white text-opacity-90">Progresso</span>
+                <span className="text-sm font-medium text-white text-opacity-90">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="w-full backdrop-filter backdrop-blur-md bg-white bg-opacity-10 rounded-full h-4 overflow-hidden">
                 <div 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-green-400 to-blue-400 h-4 rounded-full transition-all duration-500 relative overflow-hidden"
                   style={{ width: `${progress}%` }}
-                ></div>
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white via-opacity-20 to-transparent animate-pulse"></div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Results */}
           {results && (
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <CheckCircle className="mr-2 text-green-500" size={24} />
+            <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+              {/* Shimmer effect */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400 via-opacity-60 to-transparent"></div>
+              
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <CheckCircle className="mr-2 text-green-400" size={24} />
                 Risultati Elaborazione
               </h2>
 
               {/* Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-xl text-center">
+                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-green-400 from-opacity-20 to-emerald-400 to-opacity-20 border border-green-400 border-opacity-30 text-white p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold">{results.successful_clips || 0}</div>
                   <div className="text-sm opacity-90">Clip Riuscite</div>
                 </div>
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-xl text-center">
+                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-blue-400 from-opacity-20 to-cyan-400 to-opacity-20 border border-blue-400 border-opacity-30 text-white p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold">{results.total_size_mb?.toFixed(1) || '0.0'} MB</div>
                   <div className="text-sm opacity-90">Dimensione Totale</div>
                 </div>
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-xl text-center">
+                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-purple-400 from-opacity-20 to-indigo-400 to-opacity-20 border border-purple-400 border-opacity-30 text-white p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold">{(results.successful_clips || 0) * clipDuration}s</div>
                   <div className="text-sm opacity-90">Durata Totale</div>
                 </div>
@@ -282,7 +304,7 @@ const TimestampClipExtractor = () => {
                 <div className="text-center mb-8">
                   <button
                     onClick={downloadZip}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-8 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all flex items-center mx-auto"
+                    className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-green-400 from-opacity-20 to-emerald-400 to-opacity-20 border border-green-400 border-opacity-40 text-white py-3 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 hover:shadow-2xl hover:scale-105 transition-all flex items-center mx-auto"
                   >
                     <Download className="mr-2" size={20} />
                     📥 Scarica ZIP con tutte le clip
@@ -293,21 +315,21 @@ const TimestampClipExtractor = () => {
               {/* Clip Details */}
               {results.clips && results.clips.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-700 mb-4">📹 Dettagli Clip</h3>
+                  <h3 className="text-xl font-semibold text-white text-opacity-90 mb-4">📹 Dettagli Clip</h3>
                   {results.clips.map((clip, index) => (
-                    <div key={index} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
+                    <div key={index} className="backdrop-filter backdrop-blur-md bg-white bg-opacity-5 border border-white border-opacity-20 rounded-xl p-4 hover:bg-opacity-10 hover:shadow-lg transition-all">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
+                          <h4 className="font-semibold text-lg text-white mb-2 flex items-center">
                             {clip.success ? (
-                              <CheckCircle className="mr-2 text-green-500" size={18} />
+                              <CheckCircle className="mr-2 text-green-400" size={18} />
                             ) : (
-                              <XCircle className="mr-2 text-red-500" size={18} />
+                              <XCircle className="mr-2 text-red-400" size={18} />
                             )}
                             Clip #{index + 1}
                           </h4>
                           {clip.success ? (
-                            <div className="text-sm text-gray-600 space-y-1">
+                            <div className="text-sm text-white text-opacity-80 space-y-1">
                               <p><strong>File:</strong> {clip.filename}</p>
                               <p><strong>Timestamp:</strong> {formatTime(clip.timestamp)}</p>
                               <p><strong>Inizio clip:</strong> {formatTime(clip.start_time)}</p>
@@ -315,7 +337,7 @@ const TimestampClipExtractor = () => {
                               {clip.description && <p><strong>Descrizione:</strong> {clip.description}</p>}
                             </div>
                           ) : (
-                            <p className="text-red-600 text-sm">❌ Download fallito</p>
+                            <p className="text-red-400 text-sm">❌ Download fallito</p>
                           )}
                         </div>
                       </div>
@@ -327,6 +349,7 @@ const TimestampClipExtractor = () => {
           )}
         </div>
       </div>
+
     </div>
   );
 };
