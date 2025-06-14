@@ -114,7 +114,7 @@ class TimestampClipExtractor:
         ]
         
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
             
             if result.returncode == 0 and os.path.exists(output_file):
                 file_size = os.path.getsize(output_file) / (1024*1024)
