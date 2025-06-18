@@ -15,7 +15,11 @@ import shutil
 from faster_whisper import WhisperModel
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend
+CORS(app, origins=[
+    'http://localhost:3000',
+    'http://localhost:5173', 
+    'https://maat-frontend-6ph8jw2f5-christians-projects-75053e23.vercel.app'
+])  # Enable CORS for frontend
 
 # Global storage per task progress (in produzione usare Redis)
 task_progress = {}
