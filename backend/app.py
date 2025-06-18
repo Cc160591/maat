@@ -244,8 +244,16 @@ class TimestampClipExtractor:
                        '-c:a', 'copy', '-y', tiktok_file
                     ]
                     print(f"    🎬 TikTok senza sottotitoli")
-                    
+                
+                # 🎯 DEBUG TIKTOK AGGIUNTO
+                print(f"    🔧 Comando TikTok: {' '.join(tiktok_cmd)}")
                 tiktok_result = subprocess.run(tiktok_cmd, capture_output=True, text=True)
+                print(f"    📊 TikTok Return code: {tiktok_result.returncode}")
+                
+                if tiktok_result.returncode != 0:
+                    print(f"    ❌ TikTok STDERR: {tiktok_result.stderr}")
+                    print(f"    📝 TikTok STDOUT: {tiktok_result.stdout}")
+                
                 if tiktok_result.returncode == 0 and os.path.exists(tiktok_file):
                     size_mb = os.path.getsize(tiktok_file) / (1024*1024)
                     total_size += size_mb
@@ -256,6 +264,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ TikTok: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ TikTok fallito - File exists: {os.path.exists(tiktok_file)}")
             
             # Instagram - 1:1 quadrato
             if social_formats.get('instagram', False):
@@ -280,7 +290,15 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 Instagram senza sottotitoli")
                 
+                # 🎯 DEBUG INSTAGRAM AGGIUNTO
+                print(f"    🔧 Comando Instagram: {' '.join(instagram_cmd)}")
                 instagram_result = subprocess.run(instagram_cmd, capture_output=True, text=True)
+                print(f"    📊 Instagram Return code: {instagram_result.returncode}")
+                
+                if instagram_result.returncode != 0:
+                    print(f"    ❌ Instagram STDERR: {instagram_result.stderr}")
+                    print(f"    📝 Instagram STDOUT: {instagram_result.stdout}")
+                
                 if instagram_result.returncode == 0 and os.path.exists(instagram_file):
                     size_mb = os.path.getsize(instagram_file) / (1024*1024)
                     total_size += size_mb
@@ -291,6 +309,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ Instagram: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ Instagram fallito - File exists: {os.path.exists(instagram_file)}")
             
             # Facebook - 16:9 orizzontale
             if social_formats.get('facebook', False):
@@ -315,7 +335,15 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 Facebook senza sottotitoli")
                 
+                # 🎯 DEBUG FACEBOOK AGGIUNTO
+                print(f"    🔧 Comando Facebook: {' '.join(facebook_cmd)}")
                 facebook_result = subprocess.run(facebook_cmd, capture_output=True, text=True)
+                print(f"    📊 Facebook Return code: {facebook_result.returncode}")
+                
+                if facebook_result.returncode != 0:
+                    print(f"    ❌ Facebook STDERR: {facebook_result.stderr}")
+                    print(f"    📝 Facebook STDOUT: {facebook_result.stdout}")
+                
                 if facebook_result.returncode == 0 and os.path.exists(facebook_file):
                     size_mb = os.path.getsize(facebook_file) / (1024*1024)
                     total_size += size_mb
@@ -326,6 +354,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ Facebook: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ Facebook fallito - File exists: {os.path.exists(facebook_file)}")
             
             # YouTube - 16:9 HD alta qualità
             if social_formats.get('youtube', False):
@@ -352,7 +382,15 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 YouTube senza sottotitoli")
                 
+                # 🎯 DEBUG YOUTUBE AGGIUNTO
+                print(f"    🔧 Comando YouTube: {' '.join(youtube_cmd)}")
                 youtube_result = subprocess.run(youtube_cmd, capture_output=True, text=True)
+                print(f"    📊 YouTube Return code: {youtube_result.returncode}")
+                
+                if youtube_result.returncode != 0:
+                    print(f"    ❌ YouTube STDERR: {youtube_result.stderr}")
+                    print(f"    📝 YouTube STDOUT: {youtube_result.stdout}")
+                
                 if youtube_result.returncode == 0 and os.path.exists(youtube_file):
                     size_mb = os.path.getsize(youtube_file) / (1024*1024)
                     total_size += size_mb
@@ -363,6 +401,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ YouTube: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ YouTube fallito - File exists: {os.path.exists(youtube_file)}")
             
             # Rimuovi file temporanei
             if os.path.exists(base_output_file):
