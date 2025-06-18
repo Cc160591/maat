@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Upload, Download, Play, Clock, FileVideo, Loader, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, Download, Play, Clock, FileVideo, Loader, CheckCircle, XCircle, 
+         Settings, Home, Video, Zap, Users, Bell, Search, Menu, 
+         Youtube, Instagram, Facebook, Music } from 'lucide-react';
 
-const TimestampClipExtractor = () => {
+const MAATExtractor = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [timestampInput, setTimestampInput] = useState(`0:15:43 Stream Time Marker - Momento epico
 0:28:15 Stream Time Marker - Fail divertente  
@@ -12,8 +14,16 @@ const TimestampClipExtractor = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
+  const [socialFormats, setSocialFormats] = useState({
+    youtube: true,
+    tiktok: true,
+    instagram: true,
+    facebook: false
+  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // API Base URL - usa localhost durante sviluppo
+  // API Base URL
   const API_BASE = 'https://maat-production.up.railway.app';
 
   const parseTimestamps = (input) => {
@@ -45,10 +55,10 @@ const TimestampClipExtractor = () => {
 
     setIsProcessing(true);
     setProgress(0);
+    setProgressMessage('Iniziando elaborazione...');
     setResults(null);
 
     try {
-      // 1. Avvia processo
       const response = await fetch(`${API_BASE}/api/extract-clips`, {
         method: 'POST',
         headers: {
@@ -57,7 +67,8 @@ const TimestampClipExtractor = () => {
         body: JSON.stringify({
           video_url: videoUrl,
           timestamps_input: timestampInput,
-          clip_duration: clipDuration
+          clip_duration: clipDuration,
+          social_formats: socialFormats
         })
       });
 
@@ -68,10 +79,8 @@ const TimestampClipExtractor = () => {
       const data = await response.json();
       
       if (data.task_id) {
-        // 2. Polling per progress
         pollProgress(data.task_id);
       } else {
-        // Risultato immediato
         setResults(data);
         setIsProcessing(false);
       }
@@ -90,6 +99,7 @@ const TimestampClipExtractor = () => {
         const data = await response.json();
         
         setProgress(data.progress || 0);
+        setProgressMessage(data.message || 'Elaborazione in corso...');
         
         if (data.status === 'completed') {
           clearInterval(pollInterval);
@@ -105,7 +115,6 @@ const TimestampClipExtractor = () => {
       }
     }, 2000);
 
-    // Timeout dopo 10 minuti
     setTimeout(() => {
       clearInterval(pollInterval);
       if (isProcessing) {
@@ -143,201 +152,330 @@ const TimestampClipExtractor = () => {
                  : `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const toggleFormat = (format) => {
+    setSocialFormats(prev => ({
+      ...prev,
+      [format]: !prev[format]
+    }));
+  };
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-red-500">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/2 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100">
+      {/* Sidebar */}
+      <div className={`fixed left-0 top-0 h-full bg-gray-900 transition-all duration-300 z-40 ${sidebarCollapsed ? 'w-16' : 'w-64'}`}>
+        <div className="p-4">
+          {/* Logo */}
+          <div className="flex items-center mb-8">
+            {!sidebarCollapsed && (
+              <>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3">
+                  <Video className="text-white" size={20} />
+                </div>
+                <span className="text-white text-xl font-bold">MAAT</span>
+              </>
+            )}
+            <button 
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="ml-auto text-gray-400 hover:text-white transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="space-y-2">
+            <div className="flex items-center px-3 py-2 bg-blue-600 rounded-lg text-white">
+              <Zap size={20} />
+              {!sidebarCollapsed && <span className="ml-3 font-medium">Estrai Clip</span>}
+            </div>
+            
+            <div className="flex items-center px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+              <Home size={20} />
+              {!sidebarCollapsed && <span className="ml-3">Dashboard</span>}
+            </div>
+            
+            <div className="flex items-center px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+              <FileVideo size={20} />
+              {!sidebarCollapsed && <span className="ml-3">I tuoi video</span>}
+            </div>
+            
+            <div className="flex items-center px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+              <Settings size={20} />
+              {!sidebarCollapsed && <span className="ml-3">Impostazioni</span>}
+            </div>
+          </nav>
         </div>
+
+        {/* User Section */}
+        {!sidebarCollapsed && (
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                  <Users className="text-white" size={16} />
+                </div>
+                <div className="ml-3">
+                  <div className="text-white text-sm font-medium">Creator</div>
+                  <div className="text-gray-400 text-xs">Piano gratuito</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      {/* Main Content */}
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="backdrop-filter backdrop-blur-lg bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl p-8 mx-auto max-w-2xl shadow-2xl">
-            <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-              🎬 MAAT
-            </h1>
-            <p className="text-xl text-white text-opacity-90 drop-shadow">
-              Estrai clip precise dai tuoi stream usando i timestamp
-            </p>
+        <div className="bg-white/70 backdrop-blur-md border-b border-white/20 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Estrai Clip da Stream</h1>
+              <p className="text-gray-600 mt-1">Crea clip perfette per i social dai tuoi stream usando i timestamp</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Search size={20} />
+              </button>
+              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Bell size={20} />
+              </button>
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+            </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto">
-          {/* Input Form */}
-          <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl shadow-2xl p-8 mb-8 relative overflow-hidden">
-            {/* Shimmer effect */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white via-opacity-30 to-transparent animate-pulse"></div>
-            
-            <div className="grid gap-6">
-              {/* Video URL */}
-              <div>
-                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
-                  <Play className="mr-2 text-white" size={20} />
-                  URL Video (Twitch/YouTube)
-                </label>
+        <div className="p-6 space-y-6">
+          {/* Quick Start Card */}
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-6 text-white">
+            <h2 className="text-xl font-bold mb-2">🚀 Inizia subito</h2>
+            <p className="text-blue-100 mb-4">Incolla l'URL del tuo stream e i timestamp per creare clip ottimizzate per ogni piattaforma</p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center text-blue-100">
+                <Youtube className="mr-1" size={16} />
+                <span className="text-sm">YouTube</span>
+              </div>
+              <div className="flex items-center text-blue-100">
+                <Music className="mr-1" size={16} />
+                <span className="text-sm">TikTok</span>
+              </div>
+              <div className="flex items-center text-blue-100">
+                <Instagram className="mr-1" size={16} />
+                <span className="text-sm">Instagram</span>
+              </div>
+              <div className="flex items-center text-blue-100">
+                <Facebook className="mr-1" size={16} />
+                <span className="text-sm">Facebook</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Input Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Video URL Card */}
+              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <Play className="text-blue-600 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">URL Video</h3>
+                </div>
                 <input
                   type="url"
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="https://www.twitch.tv/videos/..."
-                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all text-white placeholder-white placeholder-opacity-50"
+                  className="w-full p-4 bg-white/50 backdrop-blur border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
                   disabled={isProcessing}
                 />
+                <p className="text-sm text-gray-600 mt-2">Supporta Twitch, YouTube, e altre piattaforme</p>
               </div>
 
-              {/* Timestamp Input */}
-              <div>
-                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
-                  <Clock className="mr-2 text-white" size={20} />
-                  Timestamp Input
-                </label>
+              {/* Timestamps Card */}
+              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <Clock className="text-blue-600 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Timestamp</h3>
+                </div>
                 <textarea
                   value={timestampInput}
                   onChange={(e) => setTimestampInput(e.target.value)}
                   placeholder="0:15:43 Stream Time Marker - Descrizione evento"
-                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all font-mono text-sm text-white placeholder-white placeholder-opacity-50 resize-none"
+                  className="w-full p-4 bg-white/50 backdrop-blur border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono text-sm text-gray-900 placeholder-gray-500 resize-none"
                   rows={6}
                   disabled={isProcessing}
                 />
-                <p className="text-sm text-white text-opacity-70 mt-2">
-                  📝 Formato: "HH:MM:SS Stream Time Marker - Descrizione"
-                </p>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-sm text-gray-600">Formato: "HH:MM:SS Stream Time Marker - Descrizione"</p>
+                  <span className="text-sm text-blue-600 font-medium">{parseTimestamps(timestampInput).length} clip</span>
+                </div>
               </div>
 
-              {/* Clip Duration */}
-              <div>
-                <label className="flex items-center text-lg font-semibold text-white text-opacity-90 mb-3">
-                  <FileVideo className="mr-2 text-white" size={20} />
-                  Durata Clip (secondi)
-                </label>
-                <input
-                  type="number"
-                  value={clipDuration}
-                  onChange={(e) => setClipDuration(parseInt(e.target.value))}
-                  min="10"
-                  max="300"
-                  className="w-full p-4 backdrop-filter backdrop-blur-md bg-white bg-opacity-10 border border-white border-opacity-30 rounded-xl focus:bg-opacity-20 focus:border-opacity-50 focus:outline-none transition-all text-white placeholder-white placeholder-opacity-50"
-                  disabled={isProcessing}
-                />
-                <p className="text-sm text-white text-opacity-70 mt-2">
-                  ⏰ La clip inizierà {clipDuration} secondi prima del timestamp
-                </p>
+              {/* Duration Card */}
+              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <FileVideo className="text-blue-600 mr-2" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Durata Clip</h3>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="10"
+                    max="300"
+                    value={clipDuration}
+                    onChange={(e) => setClipDuration(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    disabled={isProcessing}
+                  />
+                  <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg font-medium min-w-[80px] text-center">
+                    {clipDuration}s
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">La clip inizierà {clipDuration} secondi prima del timestamp</p>
+              </div>
+            </div>
+
+            {/* Settings Sidebar */}
+            <div className="space-y-6">
+              {/* Social Formats */}
+              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Formati Social</h3>
+                <div className="space-y-3">
+                  {[
+                    { key: 'youtube', icon: Youtube, label: 'YouTube', desc: '16:9 HD', color: 'red' },
+                    { key: 'tiktok', icon: Music, label: 'TikTok', desc: '9:16 Verticale', color: 'black' },
+                    { key: 'instagram', icon: Instagram, label: 'Instagram', desc: '1:1 Quadrato', color: 'pink' },
+                    { key: 'facebook', icon: Facebook, label: 'Facebook', desc: '16:9 Standard', color: 'blue' }
+                  ].map((format) => (
+                    <div 
+                      key={format.key}
+                      onClick={() => toggleFormat(format.key)}
+                      className={`flex items-center p-3 rounded-xl cursor-pointer transition-all ${
+                        socialFormats[format.key] 
+                          ? 'bg-blue-50 border-2 border-blue-200' 
+                          : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <format.icon 
+                        size={20} 
+                        className={socialFormats[format.key] ? 'text-blue-600' : 'text-gray-400'} 
+                      />
+                      <div className="ml-3 flex-1">
+                        <div className="font-medium text-gray-900">{format.label}</div>
+                        <div className="text-sm text-gray-500">{format.desc}</div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 ${
+                        socialFormats[format.key] 
+                          ? 'bg-blue-600 border-blue-600' 
+                          : 'border-gray-300'
+                      }`}>
+                        {socialFormats[format.key] && (
+                          <CheckCircle className="text-white" size={16} />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Process Button */}
+              {/* Action Button */}
               <button
                 onClick={processClips}
                 disabled={isProcessing}
-                className="w-full backdrop-filter backdrop-blur-md bg-gradient-to-r from-white from-opacity-20 to-white to-opacity-10 border border-white border-opacity-30 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center relative overflow-hidden"
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-20 rounded-xl"></div>
-                <div className="relative z-10 flex items-center">
-                  {isProcessing ? (
-                    <>
-                      <Loader className="animate-spin mr-2" size={20} />
-                      Elaborazione in corso... {progress}%
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2" size={20} />
-                      🚀 Estrai Clip
-                    </>
-                  )}
-                </div>
+                {isProcessing ? (
+                  <>
+                    <Loader className="animate-spin mr-2" size={20} />
+                    Elaborazione...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="mr-2" size={20} />
+                    Estrai Clip
+                  </>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress Card */}
           {isProcessing && (
-            <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-2xl p-6 mb-8">
+            <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-white text-opacity-90">Progresso</span>
-                <span className="text-sm font-medium text-white text-opacity-90">{progress}%</span>
+                <h3 className="text-lg font-semibold text-gray-900">Elaborazione in corso</h3>
+                <span className="text-sm font-medium text-blue-600">{progress}%</span>
               </div>
-              <div className="w-full backdrop-filter backdrop-blur-md bg-white bg-opacity-10 rounded-full h-4 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                 <div 
-                  className="bg-gradient-to-r from-green-400 to-blue-400 h-4 rounded-full transition-all duration-500 relative overflow-hidden"
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white via-opacity-20 to-transparent animate-pulse"></div>
-                </div>
+                ></div>
               </div>
+              <p className="text-sm text-gray-600">{progressMessage}</p>
             </div>
           )}
 
-          {/* Results */}
+          {/* Results Card */}
           {results && (
-            <div className="backdrop-filter backdrop-blur-xl bg-white bg-opacity-10 border border-white border-opacity-20 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-              {/* Shimmer effect */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400 via-opacity-60 to-transparent"></div>
-              
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <CheckCircle className="mr-2 text-green-400" size={24} />
-                Risultati Elaborazione
-              </h2>
+            <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                  <CheckCircle className="mr-2 text-green-500" size={24} />
+                  Risultati Elaborazione
+                </h2>
+                {results.download_url && (
+                  <button
+                    onClick={downloadZip}
+                    className="bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center"
+                  >
+                    <Download className="mr-2" size={16} />
+                    Scarica ZIP
+                  </button>
+                )}
+              </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-green-400 from-opacity-20 to-emerald-400 to-opacity-20 border border-green-400 border-opacity-30 text-white p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold">{results.successful_clips || 0}</div>
-                  <div className="text-sm opacity-90">Clip Riuscite</div>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-green-700">{results.successful_clips || 0}</div>
+                  <div className="text-sm text-green-600">Clip Riuscite</div>
                 </div>
-                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-blue-400 from-opacity-20 to-cyan-400 to-opacity-20 border border-blue-400 border-opacity-30 text-white p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold">{results.total_size_mb?.toFixed(1) || '0.0'} MB</div>
-                  <div className="text-sm opacity-90">Dimensione Totale</div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-700">{results.total_size_mb?.toFixed(1) || '0.0'} MB</div>
+                  <div className="text-sm text-blue-600">Dimensione Totale</div>
                 </div>
-                <div className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-purple-400 from-opacity-20 to-indigo-400 to-opacity-20 border border-purple-400 border-opacity-30 text-white p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold">{(results.successful_clips || 0) * clipDuration}s</div>
-                  <div className="text-sm opacity-90">Durata Totale</div>
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-700">{results.total_files || 0}</div>
+                  <div className="text-sm text-purple-600">File Generati</div>
                 </div>
               </div>
 
-              {/* Download Button */}
-              {results.download_url && (
-                <div className="text-center mb-8">
-                  <button
-                    onClick={downloadZip}
-                    className="backdrop-filter backdrop-blur-md bg-gradient-to-r from-green-400 from-opacity-20 to-emerald-400 to-opacity-20 border border-green-400 border-opacity-40 text-white py-3 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 hover:shadow-2xl hover:scale-105 transition-all flex items-center mx-auto"
-                  >
-                    <Download className="mr-2" size={20} />
-                    📥 Scarica ZIP con tutte le clip
-                  </button>
-                </div>
-              )}
-
               {/* Clip Details */}
               {results.clips && results.clips.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-white text-opacity-90 mb-4">📹 Dettagli Clip</h3>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Dettagli Clip</h3>
                   {results.clips.map((clip, index) => (
-                    <div key={index} className="backdrop-filter backdrop-blur-md bg-white bg-opacity-5 border border-white border-opacity-20 rounded-xl p-4 hover:bg-opacity-10 hover:shadow-lg transition-all">
+                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-lg text-white mb-2 flex items-center">
+                          <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
                             {clip.success ? (
-                              <CheckCircle className="mr-2 text-green-400" size={18} />
+                              <CheckCircle className="mr-2 text-green-500" size={18} />
                             ) : (
-                              <XCircle className="mr-2 text-red-400" size={18} />
+                              <XCircle className="mr-2 text-red-500" size={18} />
                             )}
                             Clip #{index + 1}
                           </h4>
                           {clip.success ? (
-                            <div className="text-sm text-white text-opacity-80 space-y-1">
-                              <p><strong>File:</strong> {clip.filename}</p>
+                            <div className="text-sm text-gray-600 space-y-1">
                               <p><strong>Timestamp:</strong> {formatTime(clip.timestamp)}</p>
-                              <p><strong>Inizio clip:</strong> {formatTime(clip.start_time)}</p>
+                              <p><strong>Durata:</strong> {clip.duration}s</p>
+                              <p><strong>Formati:</strong> {clip.formats_count || 0}</p>
                               <p><strong>Dimensione:</strong> {clip.size_mb?.toFixed(1)} MB</p>
                               {clip.description && <p><strong>Descrizione:</strong> {clip.description}</p>}
                             </div>
                           ) : (
-                            <p className="text-red-400 text-sm">❌ Download fallito</p>
+                            <p className="text-red-600 text-sm">❌ Elaborazione fallita</p>
                           )}
                         </div>
                       </div>
@@ -349,9 +487,8 @@ const TimestampClipExtractor = () => {
           )}
         </div>
       </div>
-
     </div>
   );
 };
 
-export default TimestampClipExtractor;
+export default MAATExtractor;
