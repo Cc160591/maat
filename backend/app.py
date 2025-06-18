@@ -18,7 +18,7 @@ app = Flask(__name__)
 CORS(app, origins=[
     'http://localhost:3000',
     'http://localhost:5173', 
-    'https://maat-frontend-6ph8jw2f5-christians-projects-75053e23.vercel.app'
+    'https://maat-frontend-8xn7tuz0h-christians-projects-75053e23.vercel.app'
 ])  # Enable CORS for frontend
 
 # Global storage per task progress (in produzione usare Redis)
@@ -111,31 +111,57 @@ class TimestampClipExtractor:
             raise ValueError(f"Formato timestamp non valido: {timestamp_str}")
     
     def parse_timestamps_input(self, timestamps_text):
-        """Estrae timestamp da testo formattato"""
+        """Estrae timestamp da testo formattato o formato semplice"""
         print("📋 Parsing timestamp...")
         
-        pattern = r'(\d+:\d+:\d+)\s+Stream Time Marker\s*-?\s*(.*)'
+        # Controlla se è formato "Stream Time Marker"
+        if "Stream Time Marker" in timestamps_text:
+            pattern = r'(\d+:\d+:\d+)\s+Stream Time Marker\s*-?\s*(.*)'
+            matches = re.findall(pattern, timestamps_text, re.MULTILINE)
+            
+            if not matches:
+                print("⚠️ Nessun timestamp 'Stream Time Marker' trovato")
+                return []
+            
+            timestamps = []
+            for match in matches:
+                try:
+                    seconds = self.parse_timestamp(match[0])
+                    timestamps.append({
+                        'original': match[0],
+                        'seconds': seconds,
+                        'description': match[1].strip() if match[1].strip() else f"Evento al {match[0]}"
+                    })
+                except ValueError as e:
+                    print(f"⚠️ Errore timestamp {match[0]}: {e}")
+            
+            print(f"✅ Trovati {len(timestamps)} timestamp validi")
+            return timestamps
         
-        matches = re.findall(pattern, timestamps_text, re.MULTILINE)
-        
-        if not matches:
-            print("⚠️ Nessun timestamp 'Stream Time Marker' trovato")
-            return []
-        
-        timestamps = []
-        for match in matches:
-            try:
-                seconds = self.parse_timestamp(match[0])
-                timestamps.append({
-                    'original': match[0],
-                    'seconds': seconds,
-                    'description': match[1].strip() if match[1].strip() else f"Evento al {match[0]}"
-                })
-            except ValueError as e:
-                print(f"⚠️ Errore timestamp {match[0]}: {e}")
-        
-        print(f"✅ Trovati {len(timestamps)} timestamp validi")
-        return timestamps
+        # Formato semplice: "0:01-0:03,0:05-0:07" 
+        else:
+            timestamps = []
+            ranges = timestamps_text.split(',')
+            
+            for i, range_str in enumerate(ranges):
+                range_str = range_str.strip()
+                if '-' in range_str:
+                    start_str, end_str = range_str.split('-', 1)
+                    try:
+                        start_seconds = self.parse_timestamp(start_str.strip())
+                        end_seconds = self.parse_timestamp(end_str.strip())
+                        # Usa il momento centrale del range
+                        timestamp_seconds = (start_seconds + end_seconds) // 2
+                        timestamps.append({
+                            'original': range_str,
+                            'seconds': timestamp_seconds,
+                            'description': f"Clip {i+1}"
+                        })
+                    except ValueError as e:
+                        print(f"⚠️ Errore range {range_str}: {e}")
+            
+            print(f"✅ Trovati {len(timestamps)} timestamp validi")
+            return timestamps
     
     def download_clip_from_timestamp(self, video_url, timestamp_seconds, clip_duration=60, url_hash="", clip_index=0, social_formats=None):
         """Scarica clip da timestamp specifico"""
