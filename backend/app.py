@@ -237,13 +237,14 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 TikTok con sottotitoli stilizzati")
                 else:
-                    # Senza sottotitoli
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     tiktok_cmd = [
                        'ffmpeg', '-i', base_output_file,
-                       '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                       '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black',
+                       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                        '-c:a', 'copy', '-y', tiktok_file
                     ]
-                    print(f"    🎬 TikTok senza sottotitoli")
+                    print(f"    🎬 TikTok senza sottotitoli (720p ottimizzato)")
                 
                 # 🎯 DEBUG TIKTOK AGGIUNTO
                 print(f"    🔧 Comando TikTok: {' '.join(tiktok_cmd)}")
@@ -258,7 +259,7 @@ class TimestampClipExtractor:
                     size_mb = os.path.getsize(tiktok_file) / (1024*1024)
                     total_size += size_mb
                     social_files.append({
-                        'format': 'TikTok (9:16)',
+                        'format': 'TikTok (720p)',
                         'file': tiktok_file,
                         'filename': os.path.basename(tiktok_file),
                         'size_mb': size_mb
@@ -285,10 +286,11 @@ class TimestampClipExtractor:
                 else:
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', 'scale=1080:1080:force_original_aspect_ratio=decrease,pad=1080:1080:(ow-iw)/2:(oh-ih)/2:black',
+                        '-vf', 'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', instagram_file
                     ]
-                    print(f"    🎬 Instagram senza sottotitoli")
+                    print(f"    🎬 Instagram senza sottotitoli (720p ottimizzato)")
                 
                 # 🎯 DEBUG INSTAGRAM AGGIUNTO
                 print(f"    🔧 Comando Instagram: {' '.join(instagram_cmd)}")
@@ -303,7 +305,7 @@ class TimestampClipExtractor:
                     size_mb = os.path.getsize(instagram_file) / (1024*1024)
                     total_size += size_mb
                     social_files.append({
-                        'format': 'Instagram (1:1)',
+                        'format': 'Instagram (720p)',
                         'file': instagram_file,
                         'filename': os.path.basename(instagram_file),
                         'size_mb': size_mb
@@ -330,10 +332,11 @@ class TimestampClipExtractor:
                 else:
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2',
+                        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', facebook_file
                     ]
-                    print(f"    🎬 Facebook senza sottotitoli")
+                    print(f"    🎬 Facebook senza sottotitoli (720p ottimizzato)")
                 
                 # 🎯 DEBUG FACEBOOK AGGIUNTO
                 print(f"    🔧 Comando Facebook: {' '.join(facebook_cmd)}")
@@ -348,7 +351,7 @@ class TimestampClipExtractor:
                     size_mb = os.path.getsize(facebook_file) / (1024*1024)
                     total_size += size_mb
                     social_files.append({
-                        'format': 'Facebook (16:9)',
+                        'format': 'Facebook (720p)',
                         'file': facebook_file,
                         'filename': os.path.basename(facebook_file),
                         'size_mb': size_mb
@@ -376,11 +379,11 @@ class TimestampClipExtractor:
                 else:
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', 'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2',
-                        '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
-                        '-c:a', 'aac', '-b:a', '192k', '-y', youtube_file
+                        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
                     ]
-                    print(f"    🎬 YouTube senza sottotitoli")
+                    print(f"    🎬 YouTube senza sottotitoli (720p ottimizzato)")
                 
                 # 🎯 DEBUG YOUTUBE AGGIUNTO
                 print(f"    🔧 Comando YouTube: {' '.join(youtube_cmd)}")
@@ -395,7 +398,7 @@ class TimestampClipExtractor:
                     size_mb = os.path.getsize(youtube_file) / (1024*1024)
                     total_size += size_mb
                     social_files.append({
-                        'format': 'YouTube (16:9 HD)',
+                        'format': 'YouTube (720p)',
                         'file': youtube_file,
                         'filename': os.path.basename(youtube_file),
                         'size_mb': size_mb
