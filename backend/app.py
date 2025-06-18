@@ -209,9 +209,9 @@ class TimestampClipExtractor:
                     'error': result.stderr
                 }
             
-            # Genera sottotitoli dalla clip base - TEMPORANEAMENTE DISABILITATO PER TEST
-            print(f"  📝 Saltando sottotitoli per test ffmpeg...")
-            srt_file = None  # self.generate_subtitles(base_output_file)
+            # Genera sottotitoli dalla clip base
+            print(f"  📝 Generando sottotitoli...")
+            srt_file = self.generate_subtitles(base_output_file)
             
             # Genera formati social
             social_files = []
@@ -236,6 +236,17 @@ class TimestampClipExtractor:
                         '-c:a', 'copy', '-y', tiktok_file
                     ]
                     print(f"    🎬 TikTok con sottotitoli stilizzati")
+                else:
+                # Comando TikTok con sottotitoli fighi
+                if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
+                    tiktok_cmd = [
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', f'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=18,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=40\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', tiktok_file
+                    ]
+                    print(f"    🎬 TikTok con sottotitoli stilizzati (720p ottimizzato)")
                 else:
                     # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     tiktok_cmd = [
@@ -284,6 +295,16 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 Instagram con sottotitoli stilizzati")
                 else:
+                # Comando Instagram con sottotitoli
+                if srt_file and os.path.exists(srt_file):
+                    instagram_cmd = [
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', f'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', instagram_file
+                    ]
+                    print(f"    🎬 Instagram con sottotitoli stilizzati (720p ottimizzato)")
+                else:
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', 'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black',
@@ -329,6 +350,16 @@ class TimestampClipExtractor:
                         '-c:a', 'copy', '-y', facebook_file
                     ]
                     print(f"    🎬 Facebook con sottotitoli stilizzati")
+                else:
+                # Comando Facebook con sottotitoli
+                if srt_file and os.path.exists(srt_file):
+                    facebook_cmd = [
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=14,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', facebook_file
+                    ]
+                    print(f"    🎬 Facebook con sottotitoli stilizzati (720p ottimizzato)")
                 else:
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
@@ -376,6 +407,16 @@ class TimestampClipExtractor:
                         '-c:a', 'aac', '-b:a', '192k', '-y', youtube_file
                     ]
                     print(f"    🎬 YouTube con sottotitoli stilizzati")
+                else:
+                # Comando YouTube con sottotitoli
+                if srt_file and os.path.exists(srt_file):
+                    youtube_cmd = [
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
+                    ]
+                    print(f"    🎬 YouTube con sottotitoli stilizzati (720p ottimizzato)")
                 else:
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
