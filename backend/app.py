@@ -209,9 +209,9 @@ class TimestampClipExtractor:
                     'error': result.stderr
                 }
             
-            # Genera sottotitoli dalla clip base
-            print(f"  📝 Generando sottotitoli...")
-            srt_file = self.generate_subtitles(base_output_file)
+            # Genera sottotitoli dalla clip base - DISABILITATO PER PIANO TRIAL
+            print(f"  📝 Saltando sottotitoli (richiede piano Hobby)...")
+            srt_file = None  # self.generate_subtitles(base_output_file)
             
             # Genera formati social
             social_files = []
