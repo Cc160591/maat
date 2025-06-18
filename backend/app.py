@@ -168,6 +168,10 @@ class TimestampClipExtractor:
         
         start_time = max(0, timestamp_seconds - clip_duration)
         
+        # 🎯 DEBUG LOGGING AGGIUNTO
+        print(f"🎯 DEBUG: social_formats ricevuti: {social_formats}")
+        print(f"🎯 DEBUG: clip_duration: {clip_duration}, timestamp: {timestamp_seconds}")
+        
         timestamp_min = timestamp_seconds // 60
         timestamp_sec = timestamp_seconds % 60
         
@@ -194,8 +198,11 @@ class TimestampClipExtractor:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
             
             if result.returncode != 0 or not os.path.exists(base_output_file):
-                print(f"  ❌ Errore download clip base")
-                print(f"  Error: {result.stderr}")
+                # 🎯 DEBUG LOGGING MIGLIORATO
+                print(f"  ❌ Errore download clip base - Return code: {result.returncode}")
+                print(f"  Error STDERR: {result.stderr}")
+                print(f"  Error STDOUT: {result.stdout}")
+                print(f"  Base file exists: {os.path.exists(base_output_file)}")
                 return {
                     'success': False,
                     'timestamp': timestamp_seconds,
@@ -362,6 +369,11 @@ class TimestampClipExtractor:
                 os.remove(base_output_file)
             if srt_file and os.path.exists(srt_file):
                 os.remove(srt_file)
+            
+            # 🎯 DEBUG FINALE AGGIUNTO
+            print(f"🎯 DEBUG FINALE: social_files generati: {len(social_files)}")
+            for sf in social_files:
+                print(f"  - {sf['format']}: {sf['filename']}")
             
             if social_files:
                 print(f"  ✅ Clip {clip_index+1} - Generati {len(social_files)} formati ({total_size:.1f} MB totali)")
