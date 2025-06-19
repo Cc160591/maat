@@ -227,17 +227,6 @@ class TimestampClipExtractor:
                     f"tiktok_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
-                # Comando TikTok con sottotitoli fighi
-                if srt_file and os.path.exists(srt_file):
-                    # Con sottotitoli stilizzati
-                    tiktok_cmd = [
-                        'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=18,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=40\'',
-                        '-c:a', 'copy', '-y', tiktok_file
-                    ]
-                    print(f"    🎬 TikTok con sottotitoli stilizzati")
-                else:
-                # Comando TikTok con sottotitoli fighi
                 if srt_file and os.path.exists(srt_file):
                     # Con sottotitoli stilizzati
                     tiktok_cmd = [
@@ -246,25 +235,20 @@ class TimestampClipExtractor:
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', tiktok_file
                     ]
-                    print(f"    🎬 TikTok con sottotitoli stilizzati (720p ottimizzato)")
+                    print(f"    🎬 TikTok con sottotitoli stilizzati (720p)")
                 else:
                     # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     tiktok_cmd = [
-                       'ffmpeg', '-i', base_output_file,
-                       '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black',
-                       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
-                       '-c:a', 'copy', '-y', tiktok_file
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', tiktok_file
                     ]
-                    print(f"    🎬 TikTok senza sottotitoli (720p ottimizzato)")
+                    print(f"    🎬 TikTok senza sottotitoli (720p)")
                 
-                # 🎯 DEBUG TIKTOK AGGIUNTO
                 print(f"    🔧 Comando TikTok: {' '.join(tiktok_cmd)}")
                 tiktok_result = subprocess.run(tiktok_cmd, capture_output=True, text=True)
                 print(f"    📊 TikTok Return code: {tiktok_result.returncode}")
-                
-                if tiktok_result.returncode != 0:
-                    print(f"    ❌ TikTok STDERR: {tiktok_result.stderr}")
-                    print(f"    📝 TikTok STDOUT: {tiktok_result.stdout}")
                 
                 if tiktok_result.returncode == 0 and os.path.exists(tiktok_file):
                     size_mb = os.path.getsize(tiktok_file) / (1024*1024)
@@ -277,7 +261,7 @@ class TimestampClipExtractor:
                     })
                     print(f"    ✅ TikTok: {size_mb:.1f} MB")
                 else:
-                    print(f"    ❌ TikTok fallito - File exists: {os.path.exists(tiktok_file)}")
+                    print(f"    ❌ TikTok fallito: {tiktok_result.stderr}")
             
             # Instagram - 1:1 quadrato
             if social_formats.get('instagram', False):
@@ -286,41 +270,28 @@ class TimestampClipExtractor:
                     f"instagram_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
-                # Comando Instagram con sottotitoli
                 if srt_file and os.path.exists(srt_file):
-                    instagram_cmd = [
-                        'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1080:1080:force_original_aspect_ratio=decrease,pad=1080:1080:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
-                        '-c:a', 'copy', '-y', instagram_file
-                    ]
-                    print(f"    🎬 Instagram con sottotitoli stilizzati")
-                else:
-                # Comando Instagram con sottotitoli
-                if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', f'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', instagram_file
                     ]
-                    print(f"    🎬 Instagram con sottotitoli stilizzati (720p ottimizzato)")
+                    print(f"    🎬 Instagram con sottotitoli stilizzati (720p)")
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', 'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', instagram_file
                     ]
-                    print(f"    🎬 Instagram senza sottotitoli (720p ottimizzato)")
+                    print(f"    🎬 Instagram senza sottotitoli (720p)")
                 
-                # 🎯 DEBUG INSTAGRAM AGGIUNTO
                 print(f"    🔧 Comando Instagram: {' '.join(instagram_cmd)}")
                 instagram_result = subprocess.run(instagram_cmd, capture_output=True, text=True)
                 print(f"    📊 Instagram Return code: {instagram_result.returncode}")
-                
-                if instagram_result.returncode != 0:
-                    print(f"    ❌ Instagram STDERR: {instagram_result.stderr}")
-                    print(f"    📝 Instagram STDOUT: {instagram_result.stdout}")
                 
                 if instagram_result.returncode == 0 and os.path.exists(instagram_file):
                     size_mb = os.path.getsize(instagram_file) / (1024*1024)
@@ -333,7 +304,7 @@ class TimestampClipExtractor:
                     })
                     print(f"    ✅ Instagram: {size_mb:.1f} MB")
                 else:
-                    print(f"    ❌ Instagram fallito - File exists: {os.path.exists(instagram_file)}")
+                    print(f"    ❌ Instagram fallito: {instagram_result.stderr}")
             
             # Facebook - 16:9 orizzontale
             if social_formats.get('facebook', False):
@@ -342,41 +313,28 @@ class TimestampClipExtractor:
                     f"facebook_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
-                # Comando Facebook con sottotitoli
                 if srt_file and os.path.exists(srt_file):
-                    facebook_cmd = [
-                        'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=14,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
-                        '-c:a', 'copy', '-y', facebook_file
-                    ]
-                    print(f"    🎬 Facebook con sottotitoli stilizzati")
-                else:
-                # Comando Facebook con sottotitoli
-                if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=14,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', facebook_file
                     ]
-                    print(f"    🎬 Facebook con sottotitoli stilizzati (720p ottimizzato)")
+                    print(f"    🎬 Facebook con sottotitoli stilizzati (720p)")
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', facebook_file
                     ]
-                    print(f"    🎬 Facebook senza sottotitoli (720p ottimizzato)")
+                    print(f"    🎬 Facebook senza sottotitoli (720p)")
                 
-                # 🎯 DEBUG FACEBOOK AGGIUNTO
                 print(f"    🔧 Comando Facebook: {' '.join(facebook_cmd)}")
                 facebook_result = subprocess.run(facebook_cmd, capture_output=True, text=True)
                 print(f"    📊 Facebook Return code: {facebook_result.returncode}")
-                
-                if facebook_result.returncode != 0:
-                    print(f"    ❌ Facebook STDERR: {facebook_result.stderr}")
-                    print(f"    📝 Facebook STDOUT: {facebook_result.stdout}")
                 
                 if facebook_result.returncode == 0 and os.path.exists(facebook_file):
                     size_mb = os.path.getsize(facebook_file) / (1024*1024)
@@ -389,51 +347,37 @@ class TimestampClipExtractor:
                     })
                     print(f"    ✅ Facebook: {size_mb:.1f} MB")
                 else:
-                    print(f"    ❌ Facebook fallito - File exists: {os.path.exists(facebook_file)}")
+                    print(f"    ❌ Facebook fallito: {facebook_result.stderr}")
             
-            # YouTube - 16:9 HD alta qualità
+            # YouTube - 16:9 HD
             if social_formats.get('youtube', False):
                 youtube_file = os.path.join(
                     self.temp_dir,
                     f"youtube_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
-                # Comando YouTube con sottotitoli
                 if srt_file and os.path.exists(srt_file):
-                    youtube_cmd = [
-                        'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
-                        '-c:v', 'libx264', '-preset', 'medium', '-crf', '18',
-                        '-c:a', 'aac', '-b:a', '192k', '-y', youtube_file
-                    ]
-                    print(f"    🎬 YouTube con sottotitoli stilizzati")
-                else:
-                # Comando YouTube con sottotitoli
-                if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
                     ]
-                    print(f"    🎬 YouTube con sottotitoli stilizzati (720p ottimizzato)")
+                    print(f"    🎬 YouTube con sottotitoli stilizzati (720p)")
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
                     ]
-                    print(f"    🎬 YouTube senza sottotitoli (720p ottimizzato)")
+                    print(f"    🎬 YouTube senza sottotitoli (720p)")
                 
-                # 🎯 DEBUG YOUTUBE AGGIUNTO
                 print(f"    🔧 Comando YouTube: {' '.join(youtube_cmd)}")
                 youtube_result = subprocess.run(youtube_cmd, capture_output=True, text=True)
                 print(f"    📊 YouTube Return code: {youtube_result.returncode}")
-                
-                if youtube_result.returncode != 0:
-                    print(f"    ❌ YouTube STDERR: {youtube_result.stderr}")
-                    print(f"    📝 YouTube STDOUT: {youtube_result.stdout}")
                 
                 if youtube_result.returncode == 0 and os.path.exists(youtube_file):
                     size_mb = os.path.getsize(youtube_file) / (1024*1024)
@@ -446,7 +390,7 @@ class TimestampClipExtractor:
                     })
                     print(f"    ✅ YouTube: {size_mb:.1f} MB")
                 else:
-                    print(f"    ❌ YouTube fallito - File exists: {os.path.exists(youtube_file)}")
+                    print(f"    ❌ YouTube fallito: {youtube_result.stderr}")
             
             # Rimuovi file temporanei
             if os.path.exists(base_output_file):
