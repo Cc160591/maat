@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './context/AuthContext';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import { LogOut, User } from 'lucide-react';
 import { Upload, Download, Play, Clock, FileVideo, Loader, CheckCircle, XCircle, 
          Settings, Home, Video, Zap, Users, Bell, Search, Menu, 
-         Youtube, Instagram, Facebook, Music, Subtitles } from 'lucide-react';
+         Youtube, Instagram, Facebook, Music } from 'lucide-react';
 
 const MAATExtractor = () => {
+// Hook autenticazione
+  const { user, isAuthenticated, loading, logout } = useAuth();
+  
+  // Stato per gestire schermate di autenticazione
+  const [authView, setAuthView] = useState('login'); // 'login' o 'register'
   const [videoUrl, setVideoUrl] = useState('');
   const [timestampInput, setTimestampInput] = useState('');
   const [clipDuration, setClipDuration] = useState(60);
@@ -17,11 +26,10 @@ const MAATExtractor = () => {
     instagram: true,
     facebook: false
   });
-  const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // API Base URL
-  const API_BASE =  const API_BASE = 'https://maat-production.up.railway.app';
+  const API_BASE = 'http://localhost:8000'; // Backend locale per autenticazione
 
   const convertSimpleFormat = (input) => {
     // Converte "0:01-0:03, 0:05-0:07" → formato "Stream Time Marker"
@@ -87,8 +95,7 @@ const MAATExtractor = () => {
           video_url: videoUrl,
           timestamps_input: processedInput,
           clip_duration: clipDuration,
-          social_formats: socialFormats,
-          subtitles_enabled: subtitlesEnabled
+          social_formats: socialFormats
         })
       });
 
@@ -226,23 +233,37 @@ const MAATExtractor = () => {
           </nav>
         </div>
 
-        {/* User Section */}
-        {!sidebarCollapsed && (
-          <div className="absolute bottom-4 left-4 right-4">
+        {/* User Section con Logout */}
+        <div className="absolute bottom-4 left-4 right-4">
+          {!sidebarCollapsed ? (
             <div className="bg-gray-800 rounded-lg p-3">
-              <div className="flex items-center">
+              <div className="flex items-center mb-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                  <Users className="text-white" size={16} />
+                  <User className="text-white" size={16} />
                 </div>
-                <div className="ml-3">
-                  <div className="text-white text-sm font-medium">Creator</div>
-                  <div className="text-gray-400 text-xs">Piano gratuito</div>
+                <div className="ml-3 flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium truncate">{user?.username}</div>
+                  <div className="text-gray-400 text-xs truncate">{user?.email}</div>
                 </div>
               </div>
+              <button
+                onClick={logout}
+                className="w-full flex items-center justify-center px-3 py-2 text-gray-300 hover:text-white hover:bg-red-600 rounded-lg transition-colors text-sm"
+              >
+                <LogOut size={16} className="mr-2" />
+                Logout
+              </button>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center p-2 text-gray-400 hover:text-white hover:bg-red-600 rounded-lg transition-colors"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
+          )}
+        </div>
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
@@ -286,10 +307,6 @@ const MAATExtractor = () => {
               <div className="flex items-center text-blue-100">
                 <Facebook className="mr-1" size={16} />
                 <span className="text-sm">Facebook</span>
-              </div>
-              <div className="flex items-center text-blue-100">
-                <Subtitles className="mr-1" size={16} />
-                <span className="text-sm">Sottotitoli AI</span>
               </div>
             </div>
           </div>
@@ -360,53 +377,6 @@ const MAATExtractor = () => {
 
             {/* Settings Sidebar */}
             <div className="space-y-6">
-              {/* Sottotitoli AI */}
-              <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Subtitles className="mr-2 text-blue-600" size={20} />
-                  Sottotitoli AI
-                </h3>
-                <div 
-                  onClick={() => setSubtitlesEnabled(!subtitlesEnabled)}
-                  className={`flex items-center p-4 rounded-xl cursor-pointer transition-all ${
-                    subtitlesEnabled 
-                      ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200' 
-                      : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900 mb-1">
-                      Genera Sottotitoli
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {subtitlesEnabled ? 'Sottotitoli automatici attivi' : 'Clicca per attivare'}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Powered by OpenAI Whisper
-                    </div>
-                  </div>
-                  <div className={`relative w-12 h-6 rounded-full transition-colors ${
-                    subtitlesEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      subtitlesEnabled ? 'left-7' : 'left-1'
-                    }`}></div>
-                  </div>
-                </div>
-                {subtitlesEnabled && (
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-sm text-blue-800">
-                      <p className="font-medium">✨ Sottotitoli AI attivi:</p>
-                      <ul className="text-xs mt-1 space-y-1">
-                        <li>• Trascrizione automatica con OpenAI</li>
-                        <li>• Sottotitoli integrati nei video</li>
-                        <li>• Ottimizzati per ogni piattaforma</li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Social Formats */}
               <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Formati Social</h3>
@@ -506,7 +476,7 @@ const MAATExtractor = () => {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-green-700">{results.successful_clips || 0}</div>
                   <div className="text-sm text-green-600">Clip Riuscite</div>
@@ -519,31 +489,7 @@ const MAATExtractor = () => {
                   <div className="text-2xl font-bold text-purple-700">{results.total_files || 0}</div>
                   <div className="text-sm text-purple-600">File Generati</div>
                 </div>
-                <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-cyan-700">
-                    {results.subtitles_enabled ? (results.clips_with_subtitles || 0) : '0'}
-                  </div>
-                  <div className="text-sm text-cyan-600">Con Sottotitoli</div>
-                </div>
               </div>
-
-              {/* Subtitles Status */}
-              {results.subtitles_enabled && (
-                <div className="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-xl">
-                  <div className="flex items-center">
-                    <Subtitles className="text-cyan-600 mr-2" size={20} />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-cyan-800">Sottotitoli AI Generati</h4>
-                      <p className="text-sm text-cyan-600">
-                        {results.clips_with_subtitles} di {results.successful_clips} clip hanno sottotitoli automatici
-                      </p>
-                    </div>
-                    <div className="text-cyan-600 font-medium">
-                      ✅ Attivi
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Clip Details */}
               {results.clips && results.clips.length > 0 && (
@@ -560,12 +506,6 @@ const MAATExtractor = () => {
                               <XCircle className="mr-2 text-red-500" size={18} />
                             )}
                             Clip #{index + 1}
-                            {clip.has_subtitles && (
-                              <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
-                                <Subtitles size={12} className="mr-1" />
-                                Sottotitoli
-                              </span>
-                            )}
                           </h4>
                           {clip.success ? (
                             <div className="text-sm text-gray-600 space-y-1">
@@ -574,9 +514,6 @@ const MAATExtractor = () => {
                               <p><strong>Formati:</strong> {clip.formats_count || 0}</p>
                               <p><strong>Dimensione:</strong> {clip.size_mb?.toFixed(1)} MB</p>
                               {clip.description && <p><strong>Descrizione:</strong> {clip.description}</p>}
-                              {clip.has_subtitles && (
-                                <p className="text-cyan-600"><strong>Sottotitoli:</strong> ✅ Generati automaticamente</p>
-                              )}
                             </div>
                           ) : (
                             <div className="text-sm text-red-600 space-y-1">
@@ -597,5 +534,35 @@ const MAATExtractor = () => {
     </div>
   );
 };
+
+// Mostra loading mentre verifica autenticazione
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+          <p className="text-gray-600">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se non autenticato, mostra login/register
+  if (!isAuthenticated) {
+    if (authView === 'register') {
+      return (
+        <Register 
+          onSwitchToLogin={() => setAuthView('login')}
+        />
+      );
+    }
+    
+    return (
+      <Login 
+        onSwitchToRegister={() => setAuthView('register')}
+        onSwitchToReset={() => alert('Reset password sarà implementato presto!')}
+      />
+    );
+  }
 
 export default MAATExtractor;

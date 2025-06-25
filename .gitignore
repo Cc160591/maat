@@ -1,0 +1,5 @@
+ai-training/
+project_map.txt
+backend/temp_clips/
+backend/__pycache__/
+backend/.env
