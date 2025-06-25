@@ -21,7 +21,7 @@ const MAATExtractor = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // API Base URL
-  const API_BASE =  const API_BASE = 'https://maat-production.up.railway.app';
+  const API_BASE = 'https://maat-production.up.railway.app';
 
   const convertSimpleFormat = (input) => {
     // Converte "0:01-0:03, 0:05-0:07" → formato "Stream Time Marker"
