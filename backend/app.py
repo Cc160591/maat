@@ -25,7 +25,8 @@ app = Flask(__name__)
 CORS(app, origins=[
     'http://localhost:3000',
     'http://localhost:5173',
-    'https://new-maat.vercel.app'
+    'https://new-maat.vercel.app',
+    'https://maat-frontend-2c0n0g1s1-christians-projects-75053e23.vercel.app'
 ])  # Enable CORS for frontend
 
 # Configurazione Database e JWT
