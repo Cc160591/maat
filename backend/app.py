@@ -26,8 +26,9 @@ CORS(app, origins=[
     'http://localhost:3000',
     'http://localhost:5173',
     'https://new-maat.vercel.app',
-    'https://maat-frontend-2c0n0g1s1-christians-projects-75053e23.vercel.app'
-])  # Enable CORS for frontend
+    'https://maat-frontend-2c0n0g1s1-christians-projects-75053e23.vercel.app',
+    'https://maat-frontend-k63y4uu2w-christians-projects-75053e23.vercel.app'
+])
 
 # Configurazione Database e JWT
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///maat_database.db'
