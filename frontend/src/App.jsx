@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Download, Play, Clock, FileVideo, Loader, CheckCircle, XCircle, 
          Settings, Home, Video, Zap, Users, Bell, Search, Menu, 
-         Youtube, Instagram, Facebook, Music, Subtitles } from 'lucide-react';
+         Youtube, Instagram, Facebook, Music, Subtitles, LogOut, User } from 'lucide-react';
 
+// Importa sistema autenticazione
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+
+// Componente video processing (IDENTICO al precedente)
 const MAATExtractor = () => {
+  const { user, logout } = useAuth(); // Aggiungi accesso a user e logout
   const [videoUrl, setVideoUrl] = useState('');
   const [timestampInput, setTimestampInput] = useState('');
   const [clipDuration, setClipDuration] = useState(60);
@@ -179,6 +186,14 @@ const MAATExtractor = () => {
     }));
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Errore logout:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100">
       {/* Sidebar */}
@@ -223,6 +238,15 @@ const MAATExtractor = () => {
               <Settings size={20} />
               {!sidebarCollapsed && <span className="ml-3">Impostazioni</span>}
             </div>
+
+            {/* Logout button */}
+            <div 
+              onClick={handleLogout}
+              className="flex items-center px-3 py-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut size={20} />
+              {!sidebarCollapsed && <span className="ml-3">Logout</span>}
+            </div>
           </nav>
         </div>
 
@@ -232,10 +256,10 @@ const MAATExtractor = () => {
             <div className="bg-gray-800 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                  <Users className="text-white" size={16} />
+                  <User className="text-white" size={16} />
                 </div>
                 <div className="ml-3">
-                  <div className="text-white text-sm font-medium">Creator</div>
+                  <div className="text-white text-sm font-medium">{user?.username || 'Creator'}</div>
                   <div className="text-gray-400 text-xs">Piano gratuito</div>
                 </div>
               </div>
@@ -244,7 +268,7 @@ const MAATExtractor = () => {
         )}
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - IDENTICO al precedente */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
         {/* Header */}
         <div className="bg-white/70 backdrop-blur-md border-b border-white/20 px-6 py-4">
@@ -295,7 +319,7 @@ const MAATExtractor = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Input Form */}
+            {/* Input Form - IDENTICO al precedente */}
             <div className="lg:col-span-2 space-y-6">
               {/* Video URL Card */}
               <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
@@ -358,7 +382,7 @@ const MAATExtractor = () => {
               </div>
             </div>
 
-            {/* Settings Sidebar */}
+            {/* Settings Sidebar - IDENTICO al precedente */}
             <div className="space-y-6">
               {/* Sottotitoli AI */}
               <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
@@ -598,4 +622,92 @@ const MAATExtractor = () => {
   );
 };
 
-export default MAATExtractor;
+// Componente Auth che gestisce login/register
+const AuthComponent = () => {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo e header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Video className="text-white" size={32} />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">MAAT</h1>
+          <p className="text-gray-600">AI-Powered Stream Highlights</p>
+        </div>
+
+        {/* Switch Login/Register */}
+        <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-2 mb-6">
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              onClick={() => setIsLogin(true)}
+              className={`py-3 px-4 rounded-xl font-medium transition-all ${
+                isLogin 
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Accedi
+            </button>
+            <button
+              onClick={() => setIsLogin(false)}
+              className={`py-3 px-4 rounded-xl font-medium transition-all ${
+                !isLogin 
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Registrati
+            </button>
+          </div>
+        </div>
+
+        {/* Componente Login/Register */}
+        <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg">
+          {isLogin ? <Login /> : <Register />}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 text-sm text-gray-500">
+          Crea clip perfette per i social dai tuoi stream
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente principale con controllo auth
+const MainApp = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Video className="text-white" size={32} />
+          </div>
+          <div className="text-xl font-semibold text-gray-700 mb-2">MAAT</div>
+          <Loader className="animate-spin mx-auto text-blue-600" size={24} />
+        </div>
+      </div>
+    );
+  }
+
+  // Se utente loggato → mostra app video
+  // Se non loggato → mostra login/register
+  return user ? <MAATExtractor /> : <AuthComponent />;
+};
+
+// App principale con AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
+}
+
+export default App;
