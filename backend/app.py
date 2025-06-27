@@ -21,9 +21,8 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, origins=[
     'http://localhost:3000',
-    'http://localhost:5173', 
-    'https://maat-frontend-8xn7tuz0h-christians-projects-75053e23.vercel.app',
-    'https://maat-frontend.vercel.app'
+    'http://localhost:5173',
+    'https://new-maat.vercel.app'
 ])  # Enable CORS for frontend
 
 # Configura OpenAI
