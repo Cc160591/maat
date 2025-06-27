@@ -5,9 +5,6 @@ import threading
 import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import subprocess
 import re
@@ -20,33 +17,18 @@ import openai
 
 # Carica variabili ambiente
 load_dotenv()
+print(f"🔍 DEBUG API Key: {bool(os.getenv('OPENAI_API_KEY'))}")
 
 app = Flask(__name__)
 CORS(app, origins=[
     'http://localhost:3000',
-    'http://localhost:5173',
-    'https://new-maat.vercel.app'
-])  # Enable CORS for frontend
-
-# Configurazione Database e JWT
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///maat_database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'maat-secret-key-change-in-production'
-
-# Inizializza estensioni
-from models import db
-db.init_app(app)
-jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
+    'http://localhost:5173', 
+    'https://maat-frontend-8xn7tuz0h-christians-projects-75053e23.vercel.app',
+    'https://maat-frontend.vercel.app'
 
 # Configura OpenAI
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-# Importa blueprint autenticazione
-from auth import auth_bp
-
-# Registra blueprint
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
+from openai import OpenAI
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Global storage per task progress (in produzione usare Redis)
 task_progress = {}
@@ -74,7 +56,7 @@ class TimestampClipExtractor:
             subprocess.run("pip install yt-dlp --upgrade --quiet", shell=True)
         
         # Verifica OpenAI API key
-        if not openai.api_key:
+        if not os.getenv('OPENAI_API_KEY'):
             print("⚠️ ATTENZIONE: OPENAI_API_KEY non configurata - sottotitoli disabilitati")
         else:
             print("✅ OpenAI API key configurata")
@@ -84,7 +66,7 @@ class TimestampClipExtractor:
     def generate_subtitles(self, video_file):
         """Genera sottotitoli usando OpenAI Whisper API"""
         try:
-            if not openai.api_key:
+            if not os.getenv('OPENAI_API_KEY'):
                 print("  ⚠️ API key OpenAI mancante - saltando sottotitoli")
                 return None
                 
@@ -98,7 +80,7 @@ class TimestampClipExtractor:
             
             # Chiamata API OpenAI Whisper
             with open(video_file, 'rb') as audio_file:
-                response = openai.audio.transcriptions.create(
+                response = client.audio.transcriptions.create(
                     model="whisper-1",
                     file=audio_file,
                     response_format="srt"
@@ -203,6 +185,10 @@ class TimestampClipExtractor:
         
         start_time = max(0, timestamp_seconds - clip_duration)
         
+        # 🎯 DEBUG LOGGING AGGIUNTO
+        print(f"🎯 DEBUG: social_formats ricevuti: {social_formats}")
+        print(f"🎯 DEBUG: clip_duration: {clip_duration}, timestamp: {timestamp_seconds}")
+        
         timestamp_min = timestamp_seconds // 60
         timestamp_sec = timestamp_seconds % 60
         
@@ -229,14 +215,18 @@ class TimestampClipExtractor:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
             
             if result.returncode != 0 or not os.path.exists(base_output_file):
-                print(f"  ❌ Errore download clip base")
-                print(f"  Error: {result.stderr}")
+                # 🎯 DEBUG LOGGING MIGLIORATO
+                print(f"  ❌ Errore download clip base - Return code: {result.returncode}")
+                print(f"  Error STDERR: {result.stderr}")
+                print(f"  Error STDOUT: {result.stdout}")
+                print(f"  Base file exists: {os.path.exists(base_output_file)}")
                 return {
                     'success': False,
                     'timestamp': timestamp_seconds,
                     'error': result.stderr
                 }
             
+<<<<<<< HEAD
             # Genera sottotitoli se richiesti
             srt_file = None
             if subtitles_enabled:
@@ -246,6 +236,11 @@ class TimestampClipExtractor:
                     print(f"    ✅ Sottotitoli generati")
                 else:
                     print(f"    ⚠️ Sottotitoli non disponibili")
+=======
+            # Genera sottotitoli dalla clip base - DISABILITATO PER PIANO TRIAL
+            print(f"  📝 Saltando sottotitoli (richiede piano Hobby)...")
+            srt_file = None  # self.generate_subtitles(base_output_file)
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
             
             # Genera formati social
             social_files = []
@@ -261,12 +256,16 @@ class TimestampClipExtractor:
                     f"tiktok_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
+<<<<<<< HEAD
                 # Comando TikTok ottimizzato
+=======
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 if srt_file and os.path.exists(srt_file):
                     # Con sottotitoli stilizzati
                     tiktok_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=18,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=40\'',
+<<<<<<< HEAD
+                        '-vf', f'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=12,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=40\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', tiktok_file
                     ]
@@ -281,7 +280,27 @@ class TimestampClipExtractor:
                     ]
                     print(f"    🎬 TikTok senza sottotitoli (720p ottimizzato)")
                     
+=======
+                        '-vf', f'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=18,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=40\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', tiktok_file
+                    ]
+                    print(f"    🎬 TikTok con sottotitoli stilizzati (720p)")
+                else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
+                    tiktok_cmd = [
+                        'ffmpeg', '-i', base_output_file,
+                        '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', tiktok_file
+                    ]
+                    print(f"    🎬 TikTok senza sottotitoli (720p)")
+                
+                print(f"    🔧 Comando TikTok: {' '.join(tiktok_cmd)}")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 tiktok_result = subprocess.run(tiktok_cmd, capture_output=True, text=True)
+                print(f"    📊 TikTok Return code: {tiktok_result.returncode}")
+                
                 if tiktok_result.returncode == 0 and os.path.exists(tiktok_file):
                     size_mb = os.path.getsize(tiktok_file) / (1024*1024)
                     total_size += size_mb
@@ -292,6 +311,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ TikTok: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ TikTok fallito: {tiktok_result.stderr}")
             
             # Instagram - 1:1 quadrato
             if social_formats.get('instagram', False):
@@ -300,25 +321,45 @@ class TimestampClipExtractor:
                     f"instagram_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
+<<<<<<< HEAD
                 # Comando Instagram ottimizzato
+=======
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
+<<<<<<< HEAD
+                        '-vf', f'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=12,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', instagram_file
                     ]
                     print(f"    🎬 Instagram con sottotitoli (720p ottimizzato)")
+=======
+                        '-vf', f'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=30\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', instagram_file
+                    ]
+                    print(f"    🎬 Instagram con sottotitoli stilizzati (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     instagram_cmd = [
                         'ffmpeg', '-i', base_output_file,
                         '-vf', 'scale=720:720:force_original_aspect_ratio=decrease,pad=720:720:(ow-iw)/2:(oh-ih)/2:black',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', instagram_file
                     ]
+<<<<<<< HEAD
                     print(f"    🎬 Instagram senza sottotitoli (720p ottimizzato)")
+=======
+                    print(f"    🎬 Instagram senza sottotitoli (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 
+                print(f"    🔧 Comando Instagram: {' '.join(instagram_cmd)}")
                 instagram_result = subprocess.run(instagram_cmd, capture_output=True, text=True)
+                print(f"    📊 Instagram Return code: {instagram_result.returncode}")
+                
                 if instagram_result.returncode == 0 and os.path.exists(instagram_file):
                     size_mb = os.path.getsize(instagram_file) / (1024*1024)
                     total_size += size_mb
@@ -329,6 +370,8 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ Instagram: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ Instagram fallito: {instagram_result.stderr}")
             
             # Facebook - 16:9 orizzontale
             if social_formats.get('facebook', False):
@@ -337,25 +380,49 @@ class TimestampClipExtractor:
                     f"facebook_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
+<<<<<<< HEAD
                 # Comando Facebook ottimizzato
+=======
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=14,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
+<<<<<<< HEAD
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=10,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', facebook_file
                     ]
                     print(f"    🎬 Facebook con sottotitoli (720p ottimizzato)")
+=======
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=14,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=50\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', facebook_file
+                    ]
+                    print(f"    🎬 Facebook con sottotitoli stilizzati (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     facebook_cmd = [
                         'ffmpeg', '-i', base_output_file,
+<<<<<<< HEAD
                         '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'copy', '-y', facebook_file
                     ]
                     print(f"    🎬 Facebook senza sottotitoli (720p ottimizzato)")
+=======
+                        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'copy', '-y', facebook_file
+                    ]
+                    print(f"    🎬 Facebook senza sottotitoli (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 
+                print(f"    🔧 Comando Facebook: {' '.join(facebook_cmd)}")
                 facebook_result = subprocess.run(facebook_cmd, capture_output=True, text=True)
+                print(f"    📊 Facebook Return code: {facebook_result.returncode}")
+                
                 if facebook_result.returncode == 0 and os.path.exists(facebook_file):
                     size_mb = os.path.getsize(facebook_file) / (1024*1024)
                     total_size += size_mb
@@ -366,33 +433,63 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ Facebook: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ Facebook fallito: {facebook_result.stderr}")
             
+<<<<<<< HEAD
             # YouTube - 16:9 HD ottimizzato
+=======
+            # YouTube - 16:9 HD
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
             if social_formats.get('youtube', False):
                 youtube_file = os.path.join(
                     self.temp_dir,
                     f"youtube_{url_hash}_{clip_index+1}_{timestamp_min:02d}m{timestamp_sec:02d}s.mp4"
                 )
                 
+<<<<<<< HEAD
                 # Comando YouTube ottimizzato
+=======
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 if srt_file and os.path.exists(srt_file):
+                    # Con sottotitoli stilizzati
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
-                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
+<<<<<<< HEAD
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=12,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
                     ]
                     print(f"    🎬 YouTube con sottotitoli (720p ottimizzato)")
+=======
+                        '-vf', f'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,subtitles={srt_file}:force_style=\'FontSize=16,BackColour=&H80000000,Bold=1,Alignment=2,MarginV=60\'',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
+                    ]
+                    print(f"    🎬 YouTube con sottotitoli stilizzati (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 else:
+                    # Senza sottotitoli - OTTIMIZZATO PER TRIAL
                     youtube_cmd = [
                         'ffmpeg', '-i', base_output_file,
+<<<<<<< HEAD
                         '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black',
                         '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
                         '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
                     ]
                     print(f"    🎬 YouTube senza sottotitoli (720p ottimizzato)")
+=======
+                        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                        '-c:a', 'aac', '-b:a', '128k', '-y', youtube_file
+                    ]
+                    print(f"    🎬 YouTube senza sottotitoli (720p)")
+>>>>>>> c049d9e97b6dfe1c5f8c1a991ee7eeac77f39372
                 
+                print(f"    🔧 Comando YouTube: {' '.join(youtube_cmd)}")
                 youtube_result = subprocess.run(youtube_cmd, capture_output=True, text=True)
+                print(f"    📊 YouTube Return code: {youtube_result.returncode}")
+                
                 if youtube_result.returncode == 0 and os.path.exists(youtube_file):
                     size_mb = os.path.getsize(youtube_file) / (1024*1024)
                     total_size += size_mb
@@ -403,12 +500,19 @@ class TimestampClipExtractor:
                         'size_mb': size_mb
                     })
                     print(f"    ✅ YouTube: {size_mb:.1f} MB")
+                else:
+                    print(f"    ❌ YouTube fallito: {youtube_result.stderr}")
             
             # Rimuovi file temporanei
             if os.path.exists(base_output_file):
                 os.remove(base_output_file)
             if srt_file and os.path.exists(srt_file):
                 os.remove(srt_file)
+            
+            # 🎯 DEBUG FINALE AGGIUNTO
+            print(f"🎯 DEBUG FINALE: social_files generati: {len(social_files)}")
+            for sf in social_files:
+                print(f"  - {sf['format']}: {sf['filename']}")
             
             if social_files:
                 subtitle_status = " con sottotitoli" if srt_file else " senza sottotitoli"
@@ -754,18 +858,9 @@ def index():
         ]
     })
 
-@app.route('/api/test-auth', methods=['GET'])
-def test_auth():
-    return jsonify({'message': 'Auth endpoint test', 'status': 'working'})
-
-# Inizializza database
-with app.app_context():
-    db.create_all()
-    print("✅ Database tabelle create")
-
 if __name__ == '__main__':
     print("🚀 Avviando Timestamp Clip Extractor API...")
     print(f"📁 Directory temporanea: {TEMP_DIR}")
-    print(f"📝 Sottotitoli OpenAI: {'✅ ATTIVI' if openai.api_key else '❌ DISATTIVI (API key mancante)'}")
+    print(f"📝 Sottotitoli OpenAI: {'✅ ATTIVI' if os.getenv('OPENAI_API_KEY') else '❌ DISATTIVI (API key mancante)'}")
     
     app.run(debug=True, host='0.0.0.0', port=8000)

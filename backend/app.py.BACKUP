@@ -5,9 +5,6 @@ import threading
 import uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import subprocess
 import re
@@ -28,25 +25,8 @@ CORS(app, origins=[
     'https://new-maat.vercel.app'
 ])  # Enable CORS for frontend
 
-# Configurazione Database e JWT
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///maat_database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'maat-secret-key-change-in-production'
-
-# Inizializza estensioni
-from models import db
-db.init_app(app)
-jwt = JWTManager(app)
-bcrypt = Bcrypt(app)
-
 # Configura OpenAI
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
-# Importa blueprint autenticazione
-from auth import auth_bp
-
-# Registra blueprint
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
 # Global storage per task progress (in produzione usare Redis)
 task_progress = {}
@@ -753,15 +733,6 @@ def index():
             'GET /api/health'
         ]
     })
-
-@app.route('/api/test-auth', methods=['GET'])
-def test_auth():
-    return jsonify({'message': 'Auth endpoint test', 'status': 'working'})
-
-# Inizializza database
-with app.app_context():
-    db.create_all()
-    print("✅ Database tabelle create")
 
 if __name__ == '__main__':
     print("🚀 Avviando Timestamp Clip Extractor API...")
